@@ -47,7 +47,28 @@ class AddressController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'user_id'    => 'required|numeric|exists:users,id',
+            'address' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error'=>$validator->errors(),'code'=>406]);
+        }
+        try {
+            $contact = Address::create([
+                "address"=>$request->address,
+                "user_id"=>$request->user_id
+            ]);
+            $response=[
+                'code'     => 200,
+                'status'=>true,
+                'data'=>$contact
+            ];
+            return response()->json($response, 200);
+           
+        } catch (Exception $e) {
+            return response()->json(['message'=>'Somethng went wrong','code'=>406]);
+        }
     }
 
     /**
