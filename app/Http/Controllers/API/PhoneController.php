@@ -110,7 +110,27 @@ class PhoneController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'phone' => 'required|numeric|digits:10|unique:'.(new UserContact)->getTable().',contact_no,'.$id.',id,user_id,'.$request->user_id,
+            'user_id'    => 'required|numeric|exists:'.(new User)->getTable().',id',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['message'=>$validator->errors(),'code'=>406]);
+        }
+        try {
+            $phone = Phone::find($id);
+		   	$phone->update(['phone'=>$request->phone]);
+
+               $response=[
+                'code'     => 200,
+                'status'=>true,
+                'data'=>$phone,
+                'message'=>'Updated successfully'
+            ];
+            return response()->json($response, 200);
+        } catch (Exception $e) {
+            return response()->json(['message'=>'Somethng went wrong','code'=>406]);
+        }
     }
 
     /**
@@ -121,6 +141,14 @@ class PhoneController extends Controller
      */
     public function destroy($id)
     {
-        //
+        
+        Phone::destroy($id);
+        $response=[
+            'code'     => 200,
+            'status'=>true,
+            'data'=>[],
+            'message'=>'Deleted successfully'
+        ];
+        return response()->json($response, 200);
     }
 }
