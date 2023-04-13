@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Validator;
+use Exception;
 
 class EmployeeController extends Controller
 {
@@ -45,7 +47,31 @@ class EmployeeController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name'     => 'required|string|max:100',
+            'email'    => 'required|string|email|max:200|unique:users,email',
+            'password' => 'required|min:6|max:15',
+            'department_id' => 'required|numeric',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['message'=>$validator->errors(),'code'=>500]); 
+        }
+        try {
+            $data = User::create([
+                "name" => $request->name,
+                "email" => $request->email,
+                "password" => $request->password,
+                "department_id" => $request->department_id
+            ]);
+            $response=[
+                'code'=> 200,
+                'status'=>true,
+                'data'=>$data
+            ];
+            return response()->json($response, 200);
+        } catch (Exception $e) {
+            return response()->json(['message'=>'Somethng went wrong','code'=>500]); 
+        }
     }
 
     /**
