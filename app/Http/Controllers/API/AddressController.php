@@ -79,7 +79,16 @@ class AddressController extends Controller
      */
     public function show($id)
     {
-        //
+        try {
+            $response=[
+                'code'     => 200,
+                'status'=>true,
+                'data'=>Address::with('user')->find($id)
+            ];
+            return response()->json($response, 200);
+        } catch (Exception $e) {
+            return response()->json(['message'=>'Somethng went wrong','code'=>406]);
+        }
     }
 
     /**
