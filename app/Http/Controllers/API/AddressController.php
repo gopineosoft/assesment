@@ -141,6 +141,13 @@ class AddressController extends Controller
      */
     public function destroy($id)
     {
-        //
+        Address::destroy($id);
+        $response=[
+            'code'     => 200,
+            'status'=>true,
+            'data'=>[],
+            'message'=>'Deleted successfullyy'
+        ];
+        return response()->json($response, 200);
     }
 }
