@@ -43,5 +43,10 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
     
-
+     // Get the department that owns the employee.
+    
+     public function department()
+     {
+         return $this->belongsTo(Department::class, 'department_id');
+     }
 }
