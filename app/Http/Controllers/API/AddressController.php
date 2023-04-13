@@ -111,7 +111,26 @@ class AddressController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'address' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error'=>$validator->errors(),'code'=>406]);
+        }
+        try {
+            $phone = Address::find($id);
+		   	$phone->update(['address'=>$request->address]);
+            $response=[
+                'code'     => 200,
+                'status'=>true,
+                'data'=>$phone,
+                'message'=>'Updated successfully'
+            ];
+            return response()->json($response, 200);
+            
+        } catch (Exception $e) {
+            return response()->json(['message'=>'Somethng went wrong','code'=>406]);
+        }
     }
 
     /**
