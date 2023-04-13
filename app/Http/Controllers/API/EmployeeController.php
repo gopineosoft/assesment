@@ -4,26 +4,29 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\Department;
+use App\Models\User;
 use Validator;
 use Exception;
 
-
-class DepartmentController extends Controller
+class EmployeeController extends Controller
 {
-  
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index()
     {
         try {
-            $department = Department::latest()->paginate(10);
+            //get all employee with department details, 10 at one page
+            $users = User::with('department')->latest()->paginate(10);
             return [
                 'status'=>true,
-                'data'=>$department
+                'data'=>$users
             ];
         } catch (Exception $e) {
-            return response()->json(['message'=>'Somethng went wrong','code'=>406]); 
+            return response()->json(['message'=>'Somethng went wrong','code'=>500]); 
         }
-
     }
 
     /**
@@ -44,27 +47,31 @@ class DepartmentController extends Controller
      */
     public function store(Request $request)
     {
-        
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:100|unique:departments,name',
+            'name'     => 'required|string|max:100',
+            'email'    => 'required|string|email|max:200|unique:users,email',
+            'password' => 'required|min:6|max:15',
+            'department_id' => 'required|numeric',
         ]);
         if ($validator->fails()) {
-            return response()->json(['message'=>$validator->errors(),'code'=>406]); 
+            return response()->json(['message'=>$validator->errors(),'code'=>500]); 
         }
         try {
-            
-            $data = Department::create(['name'=>$request->name]);
-            
+            $data = User::create([
+                "name" => $request->name,
+                "email" => $request->email,
+                "password" => $request->password,
+                "department_id" => $request->department_id
+            ]);
             $response=[
-                'code'     => 200,
+                'code'=> 200,
                 'status'=>true,
                 'data'=>$data
             ];
             return response()->json($response, 200);
         } catch (Exception $e) {
-            return response()->json(['message'=>'Somethng went wrong','code'=>406]); 
+            return response()->json(['message'=>'Somethng went wrong','code'=>500]); 
         }
-
     }
 
     /**
@@ -79,13 +86,12 @@ class DepartmentController extends Controller
             $response=[
                 'code'     => 200,
                 'status'=>true,
-                'data'=>Department::find($id)
+                'data'=>User::find($id)
             ];
             return response()->json($response, 200);
         } catch (Exception $e) {
-            return response()->json(['message'=>'Somethng went wrong','code'=>406]); 
+            return response()->json(['message'=>'Somethng went wrong','code'=>500]); 
         }
-
     }
 
     /**
@@ -109,14 +115,21 @@ class DepartmentController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'name'    => 'required|string|max:100|unique:departments,name,'.$id,
+            'name'     => 'required|string|max:100',
+            'email'    => 'required|string|email|unique:users,email,'.$id,
+            'password' => 'nullable|min:6|max:15',
+            'department_id' => 'required|numeric',
         ]);
         if ($validator->fails()) {
-            return response()->json(['message'=>$validator->errors(),'code'=>406]); 
+            return response()->json(['message'=>$validator->errors(),'code'=>500]); 
         }
+
         try {
-            $department = Department::find($id);
-		   	$department->update(['name'=>$request->name]);
+            $user = User::find($id);
+            if(!empty($request['password'])){
+		    	$request['password'] = \Hash::make($request['password']);
+		    }
+            $user->update(['name'=>$request->name,"email"=>$request->email,"password"=>$request->password,"department_id"=>$request->department_id]);
             $response=[
                 'code'     => 200,
                 'status'=>true,
@@ -124,9 +137,8 @@ class DepartmentController extends Controller
             ];
             return response()->json($response, 200);
         } catch (Exception $e) {
-            return response()->json(['message'=>'Somethng went wrong','code'=>406]); 
+            return response()->json(['message'=>'Somethng went wrong','code'=>500]); 
         }
-
     }
 
     /**
@@ -138,16 +150,15 @@ class DepartmentController extends Controller
     public function destroy($id)
     {
         try {
-            Department::destroy($id);
+            User::destroy($id);
             $response=[
                 'code'     => 200,
                 'status'=>true,
-                'data'=>'Deleted'
+                'data'=>[]
             ];
             return response()->json($response, 200);
         } catch (Exception $e) {
-            return response()->json(['message'=>'Somethng went wrong','code'=>406]); 
+            return response()->json(['message'=>'Somethng went wrong','code'=>500]); 
         }
-
     }
 }
