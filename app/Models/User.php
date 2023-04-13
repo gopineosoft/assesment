@@ -49,4 +49,17 @@ class User extends Authenticatable
      {
          return $this->belongsTo(Department::class, 'department_id');
      }
+
+     public function phone()
+    {
+        return $this->hasMany(Phone::class, 'user_id');
+    } 
+
+    
+    //get the addresses associated with the employee
+    
+    public function address()
+    {
+        return $this->hasMany(Address::class, 'user_id');
+    }
 }
