@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\User;
 
 class EmployeeController extends Controller
 {
@@ -14,7 +15,16 @@ class EmployeeController extends Controller
      */
     public function index()
     {
-        //
+        try {
+            //get all employee with department details, 10 at one page
+            $users = User::with('department')->latest()->paginate(10);
+            return [
+                'status'=>true,
+                'data'=>$users
+            ];
+        } catch (Exception $e) {
+            return response()->json(['message'=>'Somethng went wrong','code'=>500]); 
+        }
     }
 
     /**
